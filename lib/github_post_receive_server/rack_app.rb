@@ -11,6 +11,7 @@
 require 'rubygems'
 require 'rack'
 require 'json'
+require File.dirname(__FILE__) + '/smtp'
 
 module GithubPostReceiveServer
   class RackApp
