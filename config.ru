@@ -35,9 +35,9 @@ END_OF_MESSAGE
   end
 
   def handle_request
-    payload = @req.POST["payload"].strip
+    payload = @req.POST["payload"]
 
-    return error_comment unless payload && payload.length >= 2 
+    return error_comment unless payload
 
     @payload = JSON.parse(payload)
     @body = @payload.to_yaml
