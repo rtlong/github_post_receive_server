@@ -43,10 +43,12 @@ class Server
 
     puts payload unless $TESTING # remove me!
 
-    payload = JSON.parse(payload)
-
-    send_email "ryan@rtlong.com", :body => payload.to_yaml, :subject => "Github Post Receive Report"
-
+    begin 
+      payload = JSON.parse(payload).to_yaml
+      
+    ensure
+      send_email "ryan@rtlong.com", :body => payload, :subject => "Github Post Receive Report"
+    end
     @res.write THANK_YOU_COMMENT
   end
 
