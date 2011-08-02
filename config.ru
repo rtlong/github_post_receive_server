@@ -46,8 +46,8 @@ END_OF_MESSAGE
     repo = @payload['repository']['name']
     commits = @payload['commits'].collect{ |c| c['message'] }
     author = @payload['commits'].first['author']['name']
-    sms = "Updates to #{repo}: #{author} / #{commits.join(' /// ')}" 
-    send_email "ryan.long@tmomail.net", :body => sms
+    sms = "#{author}: #{commits.join('; ')}" 
+    send_email "ryan.long@tmomail.net", :body => sms, :subject => repo
   rescue 
     @body ||= "There was an issue generating this report. Probably, the JSON was invalid:\n\n#{payload}"
   ensure
