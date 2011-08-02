@@ -3,15 +3,25 @@ require 'rubygems'
 require 'rack'
 require 'json'
 require 'net/smtp'
+require 'yaml'
 
-def send_email(to,opts={})
-  opts[:server]      ||= 'localhost'
-  opts[:from]        ||= 'email@example.com'
-  opts[:from_alias]  ||= 'Example Emailer'
-  opts[:subject]     ||= "You need to see this"
-  opts[:body]        ||= "Important stuff!"
+class Server 
+  ERROR_COMMENT = "Invalid data. Need to POST a JSON object in the 'payload'"
+  ACCEPT_COMMENT = "OK"
 
-  msg = <<END_OF_MESSAGE
+  # This is what you get if you make a request that isn't a POST with a
+  # payload parameter.
+  def error_comment
+    @res.write ERROR_COMMENT
+  end
+  
+  def send_email(to,opts={})
+    opts[:server]      ||= 'home.rtlong.com'
+    opts[:from]        ||= 'updates@github.home.rtlong.com'
+    opts[:from_alias]  ||= 'Github Push Notifier'
+    opts[:subject]     ||= "Github Post Receive Report"
+
+    msg = <<END_OF_MESSAGE
 From: #{opts[:from_alias]} <#{opts[:from]}>
 To: <#{to}>
 Subject: #{opts[:subject]}
@@ -19,37 +29,26 @@ Subject: #{opts[:subject]}
 #{opts[:body]}
 END_OF_MESSAGE
 
-  Net::SMTP.start(opts[:server]) do |smtp|
-    smtp.send_message msg, opts[:from], to
-  end
-end
-
-class Server 
-  GO_AWAY_COMMENT = "Be gone, foul creature of the internet."
-  THANK_YOU_COMMENT = "Thanks! You beautiful soul you."
-
-  # This is what you get if you make a request that isn't a POST with a
-  # payload parameter.
-  def rude_comment
-    @res.write GO_AWAY_COMMENT
-  end
-
-  # Does what it says on the tin. By default, not much, it just prints the
-  # received payload.
-  def handle_request
-    payload = @req.POST["payload"]
-
-    return rude_comment if payload.nil?
-
-    puts payload unless $TESTING # remove me!
-
-    begin 
-      payload = JSON.parse(payload).to_yaml
-      
-    ensure
-      send_email "ryan@rtlong.com", :body => payload, :subject => "Github Post Receive Report"
+    Net::SMTP.start(opts[:server]) do |smtp|
+      smtp.send_message msg, opts[:from], to
     end
-    @res.write THANK_YOU_COMMENT
+  end
+
+  def handle_request
+    payload = @req.POST["payload"].strip
+
+    return error_comment unless payload && payload.length >= 2 
+
+    @payload = JSON.parse(payload)
+    @body = payload.to_yaml
+    
+    # if there is a problem, it won't send to the phone
+    send_email "ryan.long@tmomail.net", :body => @payload
+  rescue 
+    @body ||= "There was an issue generating this report. Probably, the JSON was invalid:\n\n#{payload}"
+  ensure
+    send_email "ryan@rtlong.com", :body => @body
+    @res.write ACCEPT_COMMENT
   end
 
   # Call is the entry point for all rack apps.
