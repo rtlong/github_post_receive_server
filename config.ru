@@ -43,7 +43,11 @@ END_OF_MESSAGE
     @body = payload.to_yaml
     
     # if there is a problem, it won't send to the phone
-    send_email "ryan.long@tmomail.net", :body => @payload
+    repo = @payload['repository']['name']
+    commits = @payload['commits'].collect{ |c| c['message'] }
+    author = @payload['commits'].first['author']
+    sms = "#{repo} / #{author} / #{commits.join(' /// ')}" 
+    send_email "ryan.long@tmomail.net", :body => sms
   rescue 
     @body ||= "There was an issue generating this report. Probably, the JSON was invalid:\n\n#{payload}"
   ensure
