@@ -35,9 +35,9 @@ END_OF_MESSAGE
   end
 
   def handle_request
-    payload = @req.POST["payload"].strip
+    payload = @req.POST["payload"]
 
-    return error_comment unless payload && payload.length >= 2 
+    return error_comment unless payload
 
     @payload = JSON.parse(payload)
     @body = @payload.to_yaml
@@ -50,9 +50,10 @@ END_OF_MESSAGE
     send_email "ryan.long@tmomail.net", :body => sms, :subject => repo
   rescue 
     @body ||= "There was an issue generating this report. Probably, the JSON was invalid:\n\n#{payload}"
+  else
+    @res.write ACCEPT_COMMENT
   ensure
     send_email "ryan@rtlong.com", :body => @body
-    @res.write ACCEPT_COMMENT
   end
 
   # Call is the entry point for all rack apps.
