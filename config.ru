@@ -40,13 +40,13 @@ END_OF_MESSAGE
     return error_comment unless payload && payload.length >= 2 
 
     @payload = JSON.parse(payload)
-    @body = payload.to_yaml
+    @body = @payload.to_yaml
     
     # if there is a problem, it won't send to the phone
     repo = @payload['repository']['name']
     commits = @payload['commits'].collect{ |c| c['message'] }
-    author = @payload['commits'].first['author']
-    sms = "#{repo} / #{author} / #{commits.join(' /// ')}" 
+    author = @payload['commits'].first['author']['name']
+    sms = "Updates to #{repo}: #{author} / #{commits.join(' /// ')}" 
     send_email "ryan.long@tmomail.net", :body => sms
   rescue 
     @body ||= "There was an issue generating this report. Probably, the JSON was invalid:\n\n#{payload}"
