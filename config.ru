@@ -48,6 +48,7 @@ END_OF_MESSAGE
     author = @payload['commits'].first['author']['name']
     sms = "#{author}: #{commits.join('; ')}" 
     send_email "ryan.long@tmomail.net", :body => sms, :subject => repo
+    send_email "maged.makled@gmail.com", :body => @body, :subject => "Github: New Push to #{repo}" if /social.jobs/ =~ repo
   rescue 
     @body ||= "There was an issue generating this report. Probably, the JSON was invalid:\n\n#{payload}"
   else
