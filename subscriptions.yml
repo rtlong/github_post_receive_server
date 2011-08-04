@@ -1,0 +1,10 @@
+---
+- email: maged.makled@gmail.com
+  pattern: social.jobs
+  template: email
+
+- email: ryan@rtlong.com
+  template: email
+
+- email: ryan.long@tmomail.net
+  template: sms
