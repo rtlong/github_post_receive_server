@@ -1,4 +1,6 @@
 #!/usr/bin/env rackup
+require 'rubygems'
+require 'sinatra'
 require "./app"
 
 

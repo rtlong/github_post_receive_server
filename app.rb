@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env ruby
 require 'rubygems'
+require 'rack'
 require 'sinatra'
 require 'json'
 require 'net/smtp'
@@ -34,14 +35,15 @@ post '/' do
       @sha1            = payload['after']
       @compare_url     = payload['compare']
       @need_to_bundle  = ! @commits.collect{|c| c['modified']}.flatten.uniq.select{|f| /Gemfile(\.lock)?/ =~ f }.empty?
-      @need_to_migrate = ! @commits.collect{|c| c['modified']}.flatten.uniq.select{|f| %r[db/schema.rb|db/migrations/.+.rb] =~ f }.empty
+      @need_to_migrate = ! @commits.collect{|c| c['modified']}.flatten.uniq.select{|f| %r[db/schema.rb|db/migrations/.+.rb] =~ f }.empty?
       @forced          = payload['forced']
       @ref             = payload['ref']
       @pushed_at       = payload['repository']['pushed_at']
       
       # Send some email
       SUBSCRIPTIONS[-1,1].each do |sub|
-        Email.new :subject => "Github Push Update", :body => liquid(:github)
+        e = Email.new :subject => "Github Push Update", :body => liquid(:github)
+        e.send sub['email']
       end
     else # dunno who this is, but the seem to want to give us something. Let's take it!
       request.body.rewind
@@ -52,6 +54,9 @@ post '/' do
     end
   rescue
     # Log the error!
+      e = Email.new :subject => "Github -- Error", :body => $!
+  e.send SUBSCRIPTIONS.last['email']
+
   ensure  
     status 204 # No Content. Server fullfilled request and has nothing further to give you. Now, go away.
   end
@@ -59,12 +64,8 @@ end
 
 post '/heroku' do
   @data = request.POST
+  e = Email.new :subject => "Github Push Update", :body => @data
+  e.send SUBSCRIPTIONS.last['email']
   status 204 # No Content. Server fullfilled request and has nothing further to give you. Now, go away
 end
 
-__END__
-
-@@ github
-{{ @repo_name }} has just received a push by {{ @pusher }}.
-{% if @need_to_bundle %}You'll want to `bundle install`. {% endif %}
-{% if @need_to_migrate %}You'll want to migrate your database. {% endif %}
