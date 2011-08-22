@@ -1,0 +1,23 @@
+GitHub has just received a <%= @payload['forced'] ? 'FORCED-' : '' %>push from <%= @payload['pusher']['name'] %> to <%= @repo %> on <%= @branch %> at <%= @payload['repository']['pushed_at'] %>. 
+
+The push contained these commits:
+<% for c in @payload['commits'] do %>
+---
+
+Commit: <%= c['id'] %> 
+URL: <%= c['url'] %>
+Date: <%= c['timestamp'].to_time.strftime('%a %d %h %Y, %T %z') %>
+<%= c['message'].indent(8) %>
+<% %w(removed added modified).each do |k| %> <% next unless (files = c[k]).any? %>
+Files <%= k.titleize %>:
+<%= files.join("\n").indent(8) %>
+<% end %>
+
+<% end %>
+=== ===
+
+<% unless @suggestions.empty? then %>You'll want to <%= @suggestions.join(' and ') %><% end %>
+
+You can compare the push on Github here: <%= @payload['compare'] %>
+
+[Replies to this address will not be received by a human...]

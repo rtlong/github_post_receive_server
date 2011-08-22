@@ -1,9 +1,11 @@
+
+require 'net/smtp'
+
 class Email
   def initialize(opts={})
     opts[:server]      ||= 'home.rtlong.com'
-    opts[:from]        ||= 'updates@github.home.rtlong.com'
-    opts[:from_alias]  ||= 'Github Push Notifier'
-    opts[:subject]     ||= "Github Post Receive Report"
+    opts[:from]        ||= 'postbox@rtlong.com'
+    opts[:from_alias]  ||= 'Git Push Notifier'
 
     @opts = opts
   end

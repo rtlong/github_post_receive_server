@@ -1,0 +1,6 @@
+<%= [ @payload['pusher']['name'], ': (', 
+        @branch, (@payload['forced'] ? " : FORCED" : nil), 
+      ') ', 
+      @payload['commits'].collect{|c| c['message'].split("\n").first }.join('; ')
+    ].compact.join
+%>

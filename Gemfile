@@ -4,5 +4,5 @@ source "http://rubygems.org"
 # gem "rails"
 gem 'rack'
 gem 'sinatra'
-gem 'liquid'
-
+gem 'erubis'
+gem 'activesupport'
