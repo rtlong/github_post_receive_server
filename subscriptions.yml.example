@@ -1,0 +1,9 @@
+---
+mailings:
+  label:
+    email: user@example.com
+    repo:  regex that matches the repo name
+    format: sms
+# hooks:
+  # deploy_social_jobs: FIXME: add some hooks
+    
