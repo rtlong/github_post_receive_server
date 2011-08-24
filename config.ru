@@ -4,10 +4,9 @@ require 'sinatra'
 
 # Set up the log file
 log = File.new('sinatra.log', 'a')
+log.sync = true
 STDOUT.reopen(log)
-STDOUT.sync = true
 STDERR.reopen(log)
-STDERR.sync = true
 
 # Load the app
 require "./app"
