@@ -1,5 +1,11 @@
+#!/usr/bin/env ruby
+
 require 'net/http'
 
+raise "Need to supply a host to connect to" if ARGV.empty?
+HOST = ARGV.first  
+PORT = ARGV[1] || '80'
+ 
 $payload = <<'GITHUB'
 {
   "after": "d0e9ff6d9c1f8bc374856ca2a84ad52d6013b5bf", 
@@ -9,73 +15,10 @@ $payload = <<'GITHUB'
     {
       "added": [
         "app\/controllers\/admin1_codes_controller.rb", 
-        "app\/controllers\/admin2_codes_controller.rb", 
-        "app\/controllers\/feature_types_controller.rb", 
-        "app\/controllers\/geo_hierarchies_controller.rb", 
-        "app\/controllers\/postal_codes_controller.rb", 
-        "app\/helpers\/admin1_codes_helper.rb", 
-        "app\/helpers\/admin2_codes_helper.rb", 
-        "app\/helpers\/feature_types_helper.rb", 
-        "app\/helpers\/geo_hierarchies_helper.rb", 
-        "app\/helpers\/postal_codes_helper.rb", 
-        "app\/models\/admin1_code.rb", 
-        "app\/models\/admin2_code.rb", 
-        "app\/models\/feature_type.rb", 
-        "app\/models\/geo_hierarchy.rb", 
-        "app\/models\/postal_code.rb", 
-        "app\/views\/admin1_codes\/_form.html.erb", 
-        "app\/views\/admin1_codes\/edit.html.erb", 
-        "app\/views\/admin1_codes\/index.html.erb", 
-        "app\/views\/admin1_codes\/new.html.erb", 
-        "app\/views\/admin1_codes\/show.html.erb", 
-        "app\/views\/admin2_codes\/_form.html.erb", 
-        "app\/views\/admin2_codes\/edit.html.erb", 
-        "app\/views\/admin2_codes\/index.html.erb", 
-        "app\/views\/admin2_codes\/new.html.erb", 
-        "app\/views\/admin2_codes\/show.html.erb", 
-        "app\/views\/cities\/_form.html.erb", 
         "app\/views\/cities\/edit.html.erb", 
-        "app\/views\/cities\/new.html.erb", 
-        "app\/views\/cities\/show.html.erb", 
-        "app\/views\/feature_types\/_form.html.erb", 
-        "app\/views\/feature_types\/edit.html.erb", 
-        "app\/views\/feature_types\/index.html.erb", 
-        "app\/views\/feature_types\/new.html.erb", 
-        "app\/views\/feature_types\/show.html.erb", 
-        "app\/views\/geo_hierarchies\/_form.html.erb", 
-        "app\/views\/geo_hierarchies\/edit.html.erb", 
         "app\/views\/geo_hierarchies\/index.html.erb", 
-        "app\/views\/geo_hierarchies\/new.html.erb", 
-        "app\/views\/geo_hierarchies\/show.html.erb", 
-        "app\/views\/postal_codes\/_form.html.erb", 
-        "app\/views\/postal_codes\/edit.html.erb", 
-        "app\/views\/postal_codes\/index.html.erb", 
-        "app\/views\/postal_codes\/new.html.erb", 
-        "app\/views\/postal_codes\/show.html.erb", 
-        "public\/stylesheets\/scaffold.css", 
-        "test\/fixtures\/admin1_codes.yml", 
-        "test\/fixtures\/admin2_codes.yml", 
-        "test\/fixtures\/cities.yml", 
-        "test\/fixtures\/feature_types.yml", 
-        "test\/fixtures\/geo_hierarchies.yml", 
         "test\/fixtures\/postal_codes.yml", 
-        "test\/functional\/admin1_codes_controller_test.rb", 
-        "test\/functional\/admin2_codes_controller_test.rb", 
-        "test\/functional\/cities_controller_test.rb", 
-        "test\/functional\/feature_types_controller_test.rb", 
-        "test\/functional\/geo_hierarchies_controller_test.rb", 
         "test\/functional\/postal_codes_controller_test.rb", 
-        "test\/unit\/admin1_code_test.rb", 
-        "test\/unit\/admin2_code_test.rb", 
-        "test\/unit\/feature_type_test.rb", 
-        "test\/unit\/geo_hierarchy_test.rb", 
-        "test\/unit\/helpers\/admin1_codes_helper_test.rb", 
-        "test\/unit\/helpers\/admin2_codes_helper_test.rb", 
-        "test\/unit\/helpers\/cities_helper_test.rb", 
-        "test\/unit\/helpers\/feature_types_helper_test.rb", 
-        "test\/unit\/helpers\/geo_hierarchies_helper_test.rb", 
-        "test\/unit\/helpers\/postal_codes_helper_test.rb", 
-        "test\/unit\/postal_code_test.rb"
       ], 
       "author": {
         "email": "ryan@rtlong.com", 
@@ -87,7 +30,6 @@ $payload = <<'GITHUB'
       "message": "Add several models\/scaffolds that go along with the Geonames tables\n\nNote the use of the City model for the 'geonames' table. All the geonames\ntables use 'geoname_id' as a foreign key, so to keep those happy, lets just\nuse 'geonames' instead  of 'cities' even though it's only going to be cities\nin that table.", 
       "modified": [
         "app\/controllers\/cities_controller.rb", 
-        "app\/models\/city.rb", 
         "app\/models\/resume.rb", 
         "app\/views\/cities\/index.html.erb", 
         "test\/unit\/city_test.rb"
@@ -170,7 +112,7 @@ GITHUB
 
 # define them as methods so they can be called in irb
 def github_post
-  Net::HTTP.post_form URI.parse('http://192.168.111.61:9292/'), { 'payload' => payload }
+  Net::HTTP.post_form URI.parse("http://#{HOST}:#{PORT}/"), { 'payload' => $payload }
 end
 
 def heroku_post
@@ -191,7 +133,7 @@ LOG
              'url' => 'social-jobs.herokuapp.com', 
              'user' => 'ryan@rtlong.com' }
   
-  Net::HTTP.post_form URI.parse('http://192.168.111.61:9292/heroku'), params
+  Net::HTTP.post_form URI.parse("http://#{HOST}:#{PORT}/heroku"), params
 end
 
 # call them now in case it's being called on the command line

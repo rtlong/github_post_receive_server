@@ -58,13 +58,13 @@ post '/' do
       
       # Send myself an email
       e = Email.new :subject => "post_receive_server - New unknown request"
-      e.send MAILINGS['ryan']['email'], :body => render_email_body(:unknown) 
+      e.send MAILINGS['admin']['email'], :body => render_email_body(:unknown) 
 
     end
   rescue JSON::ParserError => exception
     # Email about the error!
-    e = Email.new :subject => "post_receive_server -- Error", :body => "#{exception.message}\n\n#{request.to_yaml}"
-    e.send MAILINGS['ryan']['email']
+    e = Email.new :subject => "post_receive_server - Error", :body => "#{exception.message}\n\n#{request.to_yaml}"
+    e.send MAILINGS['admin']['email']
     
   ensure    
     body nil
