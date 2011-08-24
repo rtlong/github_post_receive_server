@@ -1,20 +1,32 @@
-GitHub has just received a <%= @payload['forced'] ? 'FORCED-' : '' %>push from <%= @payload['pusher']['name'] %> to <%= @repo %> on <%= @branch %> at <%= @payload['repository']['pushed_at'] %>. 
-
-The push contained these commits:
-<% for c in @payload['commits'] do %>
----
-
-Commit: <%= c['id'] %> 
-URL: <%= c['url'] %>
-Date: <%= c['timestamp'].to_time.strftime('%a %d %h %Y, %T %z') %>
-<%= c['message'].indent(8) %>
-<% %w(removed added modified).each do |k| %> <% next unless (files = c[k]).any? %>
-Files <%= k.titleize %>:
-<%= files.join("\n").indent(8) %>
+GitHub has just received a <%= @payload['forced'] ? 'FORCED-' : '' %>push from <%= @payload['pusher']['name'] %> to <%= @repo %> on <%= @branch %> at <%= @payload['repository']['pushed_at'] %>.
+ 
+<% if @payload['commits'].any? then %>
+  The push contained these commits:
+  <% for c in @payload['commits'] do %>
+    ---
+    
+    Commit: <%= c['id'] %> 
+    URL: <%= c['url'] %>
+    Date: <%= c['timestamp'].to_time.strftime('%a %d %h %Y, %T %z') %>
+    
+        <%= c['message'].indent(8, false) %>
+    
+    <% %w(removed added modified).each do |k| %> <% next unless (files = c[k]).any? %>
+      Files <%= k.titleize %>:
+      
+        <%= files.join("\n").indent(8, false) %>
+    <% end %>
+  
+  <% end %>
+  === ===
+<% else%>
+  The push contained no new commits detected by GitHub; this probably means that it was forced by 
+  the pusher and he had done a `rebase` or similar. You may have to take special steps to recover 
+  from this, if you had pulled the overwritten commits. 
+  See http://kernel.org/pub/software/scm/git/docs/git-rebase.html#_recovering_from_upstream_rebase
+  
+  Also, If the pusher knows that someone has pulled his code and he is forcing pushes, yell at him!  
 <% end %>
-
-<% end %>
-=== ===
 
 <% unless @suggestions.empty? then %>You'll want to <%= @suggestions.join(' and ') %><% end %>
 

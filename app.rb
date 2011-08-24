@@ -97,7 +97,7 @@ end
 
 class String
   # Returns an indented string, all lines of string will be indented with count of chars
-  def indent(count)
+  def indent(count, first_line = false)
     char = ' '
     (char * count) + gsub(/(\n+)/) { $1 + (char * count) }
   end
