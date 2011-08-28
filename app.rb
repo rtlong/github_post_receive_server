@@ -25,6 +25,7 @@ end
 get '*' do
   status 405 # Method Not Allowed. Only POST me!
   headers "Allow" => "POST"
+  body "That is an invalid way to use this service"
 end
 
 # default. will use with github, since it's already set-up to use that url
