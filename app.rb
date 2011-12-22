@@ -33,15 +33,15 @@ post '/' do
   begin
     if request['payload'] then # Looks like Github. Payload is JSON. Parse and send some mail.
       @payload = JSON.parse(request['payload'])
-      
+
       owner, repo = @payload['repository'].values_at('owner', 'name')
       @repo = [owner['name'], repo].join('/')
       @branch = @payload['ref'].gsub('refs/heads/', '')
       mods = @payload['commits'].collect{|c| c['modified']}.flatten.uniq
       @suggestions = []
       @suggestions << "`bundle install`" unless mods.select{|f| /Gemfile(\.lock)?/ =~ f }.empty?
-      @suggestions << "migrate your database" unless mods.select{|f| %r[db/schema.rb|db/migrations/.+.rb] =~ f }.empty?     
-      
+      @suggestions << "migrate your database" unless mods.select{|f| %r[db/schema.rb|db/migrations/.+.rb] =~ f }.empty?
+
       # Send some email
       e = Email.new :subject => "[GitHub] Push to #{@repo}"
       MAILINGS.each do |label, mailing|
@@ -49,25 +49,26 @@ post '/' do
           e.send mailing['email'], :body => render_email_body(:github, mailing)
         end
       end
-      
+
     else # dunno who this is, but the seem to want to give us something. Let's take it!
       request.body.rewind
       @filename = File.join("tmp","#{Time.now.strftime("%Y%m%d-%H%M%S%L")}.file")
-      File.open(@filename, "w") do |f| 
-        f.puts request.body.read
-      end 
-      
+      File.open(@filename, "w") do |f|
+        f.puts @request_body = request.body.read
+      end
+      @request = request # So the email template can access it
+
       # Send myself an email
       e = Email.new :subject => "post_receive_server - New unknown request"
-      e.send MAILINGS['admin']['email'], :body => render_email_body(:unknown) 
+      e.send MAILINGS['admin']['email'], :body => render_email_body(:unknown)
 
     end
   rescue JSON::ParserError => exception
     # Email about the error!
     e = Email.new :subject => "post_receive_server - Error", :body => "#{exception.message}\n\n#{request.to_yaml}"
     e.send MAILINGS['admin']['email']
-    
-  ensure    
+
+  ensure
     body nil
     status 204 # No Content. Server fullfilled request and has nothing further to give you. Now, go away.
   end
@@ -80,7 +81,7 @@ post '/heroku' do
     end
 
     e = Email.new :subject => "[Heroku] #{@app} deployed"
-    MAILINGS.each do |label, mailing| 
+    MAILINGS.each do |label, mailing|
       if /#{mailing['repo']}/.match(@app) then
         e.send mailing['email'], :body => render_email_body(:heroku, mailing)
       end
@@ -91,8 +92,8 @@ post '/heroku' do
 end
 
 def render_email_body(template, opts={})
-  format = opts['format'] ||= 'email' 
-  
+  format = opts['format'] ||= 'email'
+
   return erb( "#{template.to_s}.#{format}".to_sym )
 end
 
