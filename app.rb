@@ -28,6 +28,23 @@ get '*' do
   body "That is an invalid way to use this service"
 end
 
+post '/heroku' do
+  if params.keys.sort == HEROKU_DATA then # looks like Heroku, go with it.
+    params.each_pair do |key, value|
+      instance_variable_set "@#{key}", value
+    end
+
+    e = Email.new :subject => "[Heroku] #{@app} deployed"
+    MAILINGS.each do |label, mailing|
+      if /#{mailing['repo']}/.match(@app) then
+        e.send mailing['email'], :body => render_email_body(:heroku, mailing)
+      end
+    end
+  end
+  body nil
+  status 204 # No Content. Server fullfilled request and has nothing further to give you. Now, go away
+end
+
 # default. will use with github, since it's already set-up to use that url
 post '*' do
   begin
@@ -47,6 +64,15 @@ post '*' do
       MAILINGS.each do |label, mailing|
         if /#{mailing['repo']}/.match(@repo) then
           e.send mailing['email'], :body => render_email_body(:github, mailing)
+        end
+      end
+
+      SUBSCRIPTIONS['hooks'].each do |label, h|
+        if /#{h['repo']}/.match(@repo) then
+          puts "Running the #{label} hook..."
+          fork do
+            system h['hook']
+          end
         end
       end
 
@@ -72,23 +98,6 @@ post '*' do
     body nil
     status 204 # No Content. Server fullfilled request and has nothing further to give you. Now, go away.
   end
-end
-
-post '/heroku' do
-  if params.keys.sort == HEROKU_DATA then # looks like Heroku, go with it.
-    params.each_pair do |key, value|
-      instance_variable_set "@#{key}", value
-    end
-
-    e = Email.new :subject => "[Heroku] #{@app} deployed"
-    MAILINGS.each do |label, mailing|
-      if /#{mailing['repo']}/.match(@app) then
-        e.send mailing['email'], :body => render_email_body(:heroku, mailing)
-      end
-    end
-  end
-  body nil
-  status 204 # No Content. Server fullfilled request and has nothing further to give you. Now, go away
 end
 
 def render_email_body(template, opts={})
