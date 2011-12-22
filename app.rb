@@ -29,7 +29,7 @@ get '*' do
 end
 
 # default. will use with github, since it's already set-up to use that url
-post '/' do
+post '*' do
   begin
     if request['payload'] then # Looks like Github. Payload is JSON. Parse and send some mail.
       @payload = JSON.parse(request['payload'])
