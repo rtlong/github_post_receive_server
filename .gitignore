@@ -3,3 +3,4 @@ tmp/
 subscriptions.yml
 *.*~
 sinatra.log
+.env
